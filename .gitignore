@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+venv/
+.idea/
+.vscode/
+.ipynb_checkpoints
+logs
+# Personal utility files
+.utils/
+db_data
