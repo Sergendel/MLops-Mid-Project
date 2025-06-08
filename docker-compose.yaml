@@ -39,3 +39,20 @@ services:
       - "5432:5432"
     volumes:
       - ./db_data:/var/lib/postgresql/data
+
+  flask_api:
+    build: ./flask_api
+    container_name: flask_api_container
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./shared_modules:/app/shared_modules  # explicitly mount into /app
+      - ./config.yaml:/app/config.yaml
+      - ./company_db_setup:/app/company_db_setup
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+    depends_on:
+      - db

@@ -5,7 +5,7 @@ the oroject imncludes 3 main compinents:
 4 model - located ion shared model fodler and will be used bopth nt airflow and flask api 
 
 
-
+BATCH processing (AIRFLOW)
 1. load vsv data to simuklated company db datadase. 
 folder company_db_setup ocludes the csv data files (see data_files subfolder) and two skripts (company_db_setup/load_csv_to_db.py and company_db_setup/verify_data.py)  that used to upload the csv files into postgresql db and verify the data is loaded corectly/ 
 
@@ -33,8 +33,17 @@ find the airflow credentials (look for the line  Simple auth manager | Password 
 
 manually trigger dags :
  1. airflow/dags/load_and_verify_csv_data_to_company_db_dag.py  to  upload data to simulated company db 
- 2. airflow/dags/etl_pipeline_dag.py  to run the etl 
+ 2. airflow/dags/batch_processing_dag.py to run daily batch predicxtions 
 
+
+Online predictions (Flask)
+
+health test 
+curl http://localhost:5000/health
+
+prediction: curl -X POST http://localhost:5000/predict \
+-H "Content-Type: application/json" \
+-d '{"TotalCharges": 500.0, "Contract": "Month-to-month", "PhoneService": "Yes", "tenure": 10}'
 
 
 
