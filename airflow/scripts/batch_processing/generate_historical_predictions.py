@@ -1,11 +1,14 @@
 import pandas as pd
+import pickle
+import os
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
-import os
-import pickle
+from shared_modules.transform import ChurnDataTransformer
 
 # Load environment 
 load_dotenv()
+
+PROJECT_ROOT = "/opt/airflow"
 
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
@@ -16,28 +19,23 @@ engine = create_engine(
     f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:5432/{POSTGRES_DB}'
 )
 
-# Load reference data 
-reference_df = pd.read_sql('SELECT * FROM table1', engine)
-
-#  transform data (assuming transform function available)
-from shared_modules.transform import ChurnDataTransformer
-transformer = ChurnDataTransformer()
-reference_transformed = transformer.transform(reference_df)
-
-# Load model 
-model_path = '/shared_modules/model/churn_model.pickle'
+model_path = os.path.join(PROJECT_ROOT, 'shared_modules/model/churn_model.pickle')
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
-# Make predictions 
+reference_df = pd.read_sql('SELECT * FROM table1', engine)
+
+transformer = ChurnDataTransformer()
+reference_transformed = transformer.transform(reference_df)
+
+# Predict  (no target labels)
 reference_transformed['prediction'] = model.predict(reference_transformed)
 
-#  drop table if exists
-with engine.connect() as conn:
+#  drop existing table to avoid constraint issues
+with engine.begin() as conn:
     conn.execute(text('DROP TABLE IF EXISTS table1_historical_predictions CASCADE;'))
-    conn.commit()
 
-# Now  create the table again
+# Save predictions 
 reference_transformed.to_sql('table1_historical_predictions', engine, if_exists='replace', index=False)
 
 print(" Historical predictions table  updated successfully.")

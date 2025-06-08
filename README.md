@@ -67,6 +67,11 @@ Simulates company's data base therefore should be executed beforte the ETL pipel
   * `airflow/dags/load_and_verify_csv_data_to_company_db_dag.py`
   * Loads CSV data into PostgreSQL, verifies the load, and tests data transformations and predictions.
 
+* **\[MUST RUN] Historical Predictions Update DAG (Used for data/model drift monitoring):**
+
+  * `airflow/dags/update_historical_predictions_dag.py`
+  * Epdates historical data with model predictions for accurate drift monitoring. Scheduled weekly/monthly or run manually.  
+
 * **\[OPTIONAL] ETL Pipeline DAG:**
 
   * `airflow/dags/etl_pipeline_dag.py`
@@ -76,17 +81,51 @@ Simulates company's data base therefore should be executed beforte the ETL pipel
 
   * `airflow/dags/batch_processing_dag.py`
   * Extracts raw data from db , performs transformations and predictions, loads predictions in PostgreSQL and local CSV files.
+    Also, performs monitoring of data drift.
 
-* **\[MUST RUN] Historical Predictions Update DAG (Used for data/model drift monitoring):**
 
-  * `airflow/dags/update_historical_predictions_dag.py`
-  * Epdates historical data with model predictions for accurate drift monitoring. Scheduled weekly/monthly or run manually.  
 
 #### Manual DAG Execution
 
 * Open Airflow webserver ([http://localhost:8080](http://localhost:8080))
 * Use provided credentials (`admin` and generated password from Airflow logs)
 * Manually trigger necessary DAGs
+
+
+### Evidently AI (Monitoring)
+
+Tracks data drift and model performance.
+
+Drift Monitoring Setup:
+
+* Generates drift reports comparing historical predictions and current prediction data.
+
+* Historical predictions stored explicitly in PostgreSQL (table1_historical_predictions).
+
+* Reports include both data drift and model prediction drift for comprehensive monitoring.
+
+Report output location:
+```bash
+company_db_setup/data_files/evidently_report.html
+```
+Execution:
+
+* Automatically triggered by Airflow DAG after batch predictions.
+
+How to see the Evidently AI report: 
+
+```bash
+cd company_db_setup/data_files
+python -m http.server 8000
+```
+```bash
+http://localhost:8000/evidently_report.html
+```
+
+
+![Report Example](./evidently_report.bmp)
+
+
 
 ### Flask API (Online Predictions)
 
@@ -109,25 +148,6 @@ curl -X POST http://localhost:5000/predict \
 ```
 
 
-### Evidently AI (Monitoring)
-
-Tracks data drift and model performance.
-
-Drift Monitoring Setup:
-
-* Generates drift reports comparing historical predictions and current prediction data.
-
-* Historical predictions stored explicitly in PostgreSQL (table1_historical_predictions).
-
-* Reports include both data drift and model prediction drift for comprehensive monitoring.
-
-Report output location:
-```bash
-company_db_setup/data_files/evidently_report.html
-```
-Execution:
-
-* Automatically triggered by Airflow DAG after batch predictions.
 
 ## Environment Configuration (`.env`)
 
@@ -172,7 +192,8 @@ docker-compose logs airflow | grep 'Password for user admin'
 Trigger these DAGs manually from Airflow UI (otherwise triggered automatically daily at 12:00):
 
 1. `load_and_verify_csv_data_to_company_db_dag`
-2. `batch_processing_dag`
+2. `update_historical_predictions_dag.py`
+3. `batch_processing_dag`
 
 ---
 
