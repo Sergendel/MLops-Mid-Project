@@ -9,7 +9,6 @@ COPY ./app ./app
 
 EXPOSE 5000
 
-# explicitly include /app in PYTHONPATH
 ENV PYTHONPATH=/app
 
 CMD ["python", "app/main.py"]

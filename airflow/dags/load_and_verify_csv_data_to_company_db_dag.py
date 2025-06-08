@@ -1,14 +1,29 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from datetime import datetime
+from airflow.sensors.time_delta import TimeDeltaSensor
+from datetime import datetime, timedelta
+
+default_args = {
+    'owner': 'airflow',
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 
 with DAG(
     'load_and_verify_csv_data_to_company_db',
     description='Loads CSV, verifies DB data, and tests model compatibility',
-        schedule='0 12 * * *',  # explicitly daily at 12:00 PM
-        start_date=datetime(2025, 1, 1),
+    schedule='0 12 * * *',
+    start_date=datetime(2025, 1, 1),
     catchup=False,
+    default_args=default_args,
 ) as dag:
+
+    #  Wait 5 seconds for PostgreSQL readiness
+    wait_for_postgres = TimeDeltaSensor(
+        task_id='wait_for_postgres_initialization',
+        delta=timedelta(seconds=5),
+        mode='reschedule'
+    )
 
     load_csv_task = BashOperator(
         task_id='load_csv_to_db',
@@ -27,4 +42,5 @@ with DAG(
         ),
     )
 
-    load_csv_task >> verify_db_task >> verify_model_task
+    # Define task sequence
+    wait_for_postgres >> load_csv_task >> verify_db_task >> verify_model_task

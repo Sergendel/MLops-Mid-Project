@@ -5,7 +5,11 @@
 
 ## 🚀 Project Overview
 
-This project demonstrates an MLOps pipeline explicitly including ETL processing, batch predictions, and online predictions using Flask API, Airflow, PostgreSQL, and shared model files.
+This project implements a robust and comprehensive Machine Learning Operations (MLOps) pipeline
+ for a customer churn prediction model. 
+It involves data extraction, transformation, and loading (ETL), batch and real-time prediction capabilities,
+ and continuous monitoring with automated alerts to ensure reliability and accuracy.
+
 
 ---
 
@@ -13,8 +17,8 @@ This project demonstrates an MLOps pipeline explicitly including ETL processing,
 
 * **ETL Processing:** Automate data loading, transformation, and verification using Apache Airflow.
 * **Batch Predictions:** Run daily batch predictions using Airflow DAGs.
-* **Online Predictions:** Serve model predictions via a RESTful API built using Flask.
-
+* **Real Time Predictions:** Serve model predictions via a RESTful API built using Flask.
+* **Monitoring and Alerts:** Track data drift and model performance using Evidently AI.
 ---
 
 ## 🖼️ Architecture Diagram
@@ -27,12 +31,13 @@ Refer to the architecture diagram below for visual details about the data flow a
 
 ## 📦 Technological Stack
 
-* **Containers:** Docker and Docker Compose
+* **Containers & Orchestration:** Docker and Docker Compose
 * **Orchestration:** Apache Airflow
 * **API Framework:** Flask
 * **Database:** PostgreSQL (simulated company DB)
 * **Data Handling:** Pandas, SQLAlchemy
-* **Model and Data Transformation:** scikit-learn, custom shared modules
+* **Model and Data Transformation:** scikit-learn
+* **Monitoring::** Track data drift and model performance using Evidently AI.
 
 ---
 
@@ -40,8 +45,8 @@ Refer to the architecture diagram below for visual details about the data flow a
 
 * `airflow/` - Airflow container with DAGs and ETL scripts
 * `flask_api/` - Flask container for serving predictions
-* `company_db_setup/` - CSV data loading scripts and data files
-* `shared_modules/` - Common transformation scripts and trained model (`churn_model.pickle`)
+* `company_db_setup/` - simulates Compnay's database (PostgreSQL) and populates it using provided csv files.
+* `shared_modules/` - Shared transform script of ETL and pretrained model (`churn_model.pickle`)
 * `.env` - Environment variables for database credentials
 * `config.yaml` - Project configuration paths
 * `Architecture.bmp` - Project architecture visual representation
@@ -50,13 +55,14 @@ Refer to the architecture diagram below for visual details about the data flow a
 
 ## ⚙️ Components
 
-### 1️⃣ Airflow (Batch Processing)
+### Airflow (Batch Processing)
 
 **Airflow Container:** Automates ETL tasks and batch predictions.
 
 #### Key DAGs
 
 * **\[MUST RUN] Load and Verify CSV Data DAG:**
+Simulates company's data base therefore should be executed beforte the ETL pipeline or daily batchprocessing.
 
   * `airflow/dags/load_and_verify_csv_data_to_company_db_dag.py`
   * Loads CSV data into PostgreSQL, verifies the load, and tests data transformations and predictions.
@@ -69,7 +75,12 @@ Refer to the architecture diagram below for visual details about the data flow a
 * **\[MUST RUN] Batch Prediction DAG:**
 
   * `airflow/dags/batch_processing_dag.py`
-  * Extracts data, performs transformations and predictions, stores predictions in PostgreSQL and CSV files.
+  * Extracts raw data from db , performs transformations and predictions, loads predictions in PostgreSQL and local CSV files.
+
+* **\[MUST RUN] Historical Predictions Update DAG (Used for data/model drift monitoring):**
+
+  * `airflow/dags/update_historical_predictions_dag.py`
+  * Epdates historical data with model predictions for accurate drift monitoring. Scheduled weekly/monthly or run manually.  
 
 #### Manual DAG Execution
 
@@ -77,7 +88,7 @@ Refer to the architecture diagram below for visual details about the data flow a
 * Use provided credentials (`admin` and generated password from Airflow logs)
 * Manually trigger necessary DAGs
 
-### 2️⃣ Flask API (Online Predictions)
+### Flask API (Online Predictions)
 
 Provides online predictions using trained churn model.
 
@@ -97,13 +108,28 @@ curl -X POST http://localhost:5000/predict \
 -d '{"TotalCharges": 500.0, "Contract": "Month-to-month", "PhoneService": "Yes", "tenure": 10}'
 ```
 
-### 3️⃣ PostgreSQL Container (Simulated Company DB)
 
-Stores data loaded from CSV and prediction results.
+### Evidently AI (Monitoring)
 
----
+Tracks data drift and model performance.
 
-## 🔑 Environment Configuration (`.env`)
+Drift Monitoring Setup:
+
+* Generates drift reports comparing historical predictions and current prediction data.
+
+* Historical predictions stored explicitly in PostgreSQL (table1_historical_predictions).
+
+* Reports include both data drift and model prediction drift for comprehensive monitoring.
+
+Report output location:
+```bash
+company_db_setup/data_files/evidently_report.html
+```
+Execution:
+
+* Automatically triggered by Airflow DAG after batch predictions.
+
+## Environment Configuration (`.env`)
 
 Create `.env` from `.env_example`:
 
@@ -122,7 +148,15 @@ Set the PostgreSQL credentials explicitly in `.env`.
 ```bash
 docker-compose down -v --remove-orphans
 rm -rf ./db_data
-docker-compose build --no-cache && docker-compose up --build
+docker-compose build --no-cache
+docker-compose up -d
+
+# Wait for Airflow initialization (~30 seconds)
+echo " Waiting 30 seconds for Airflow to initialize..."
+sleep 30
+
+# Retrieve Airflow password from logs:
+docker-compose logs airflow | grep -i "admin"
 ```
 
 ### Airflow Authentication:
@@ -130,26 +164,20 @@ docker-compose build --no-cache && docker-compose up --build
 * Check the Airflow container logs for generated admin password:
 
 ```bash
-docker-compose logs airflow
+docker-compose logs airflow | grep 'Password for user admin'
 ```
 
 ### Manual DAG Execution:
 
-Trigger these DAGs manually from Airflow UI:
+Trigger these DAGs manually from Airflow UI (otherwise triggered automatically daily at 12:00):
 
 1. `load_and_verify_csv_data_to_company_db_dag`
 2. `batch_processing_dag`
 
 ---
 
-## ✅ Best Practices
 
-* Sensitive credentials should be managed via `.env`.
-* Regularly verify predictions and transformations for model drift and data integrity.
-
----
-
-**Happy MLOps-ing! 🚀📊**
+**Happy MLOps-ing!**
 
 
 
@@ -157,54 +185,100 @@ Trigger these DAGs manually from Airflow UI:
 
 
 
-the oroject imncludes 3 main compinents: 
-1. Airflow container that runs data etl 
-2. flaskapi container for predictions 
-3. company db (here we simulate it postgresql container
-4 model - located ion shared model fodler and will be used bopth nt airflow and flask api 
+# MLOps Project Components and Usage Instructions
 
+## Project Components
 
-BATCH processing (AIRFLOW)
-1. load vsv data to simuklated company db datadase. 
-folder company_db_setup ocludes the csv data files (see data_files subfolder) and two skripts (company_db_setup/load_csv_to_db.py and company_db_setup/verify_data.py)  that used to upload the csv files into postgresql db and verify the data is loaded corectly/ 
+The project consists of four main components:
 
-2. airflow dags: 
+1. **Airflow Container**: Handles data extraction, transformation, and loading (ETL) processes.
+2. **Flask API Container**: Provides real-time model predictions.
+3. **Company Database (PostgreSQL Container)**: Simulates a company database.
+4. **Shared Model**: Contains the serialized RandomForest model (`churn_model.pickle`), shared by both Airflow and Flask API.
 
-1. MUST RUN : airflow/dags/load_and_verify_csv_data_to_company_db_dag.py  - this dag is to load vsv file in to sumulated companydb. it loads the data, verify it  , and also it make another important test - it takes a row from the data  transform it (using shared_modules/transform.py in shared folder) and runs prediction by appliing shared_modules/model/churn_model.pickle on the procecced data
+## Batch Processing with Airflow
 
-2. OPTIONALL: airflow/dags/etl_pipeline_dag.py  - this is the "real" etl . it extracts the raw data from companydb, transforms it and loads back to cpmpany db. the 2 skripts  extract and load are located in folder airflow, while the transform is located in shared module folder shared_modules/model/verify_model_transform.py 
-Actually we do not use this etl in real batch thet requred by assigment. 
+### Step 1: Load CSV Data into Simulated Database
 
-3. MUST RUN: airflow/dags/batch_processing_dag.py   runs the etl (extracts data from postgresql, trnasforms it,  run model (predictions ) loads the results PostgreSQL (tableX_predictions) + CSV files (company_db_setup/data_files/predictions)  )
+The folder `company_db_setup` includes CSV files in the `data_files` subdirectory, along with two Python scripts:
 
-.env 
-put the credentials here, you can just rename the .env_exampllt to .env . (_i dont use any private keys so i put it in git, iotherwhse it a very bad porcatice)
+* `company_db_setup/load_csv_to_db.py`: Loads CSV files into PostgreSQL.
+* `company_db_setup/verify_data.py`: Verifies the data is correctly loaded into the database.
 
-config.yaml - used for setting like paths and so on 
+### Step 2: Airflow DAGs
 
-how to run : 
-we use single docker=compose file to up all the 3 containers (airflow, postgresql and flaskapi)]
+#### **Must Run:** `airflow/dags/load_and_verify_csv_data_to_company_db_dag.py`
 
-docker-compose down -v --remove-orphans   
+* Loads CSV data into the simulated database.
+* Verifies data loading.
+* Performs an additional test: extracts a row from the database, transforms it using `shared_modules/transform.py`, and runs a prediction using `shared_modules/model/churn_model.pickle`.
+
+#### **Optional:** `airflow/dags/etl_pipeline_dag.py`
+
+* Represents a general-purpose ETL pipeline.
+* Extracts raw data from the simulated database, transforms it, and loads it back into the database.
+* Extraction and loading scripts are in the Airflow folder, while the transformation script is located at `shared_modules/model/verify_model_transform.py`.
+* This DAG is not required for daily batch predictions.
+
+#### **Must Run:** `airflow/dags/batch_processing_dag.py`
+
+* Performs the main daily batch ETL processing.
+* Extracts data from PostgreSQL.
+* Transforms the data and performs model predictions.
+* Stores prediction results back into PostgreSQL (`tableX_predictions`) and as CSV files in `company_db_setup/data_files/predictions`.
+
+## Environment and Configuration
+
+* **`.env`**:
+
+  * Rename `.env_example` to `.env` and populate it with your PostgreSQL credentials.
+  * **Important**: Typically, avoid including sensitive credentials in git repositories.
+
+* **`config.yaml`**:
+
+  * Defines paths and configurations for the project.
+
+## Running the Project
+
+The project uses a single `docker-compose.yaml` file to launch all three containers: Airflow, PostgreSQL, and Flask API.
+
+Execute the following commands:
+
+```bash
+docker-compose down -v --remove-orphans
 rm -rf ./db_data
 docker-compose build --no-cache && docker-compose up --build
+```
 
-find the airflow credentials (look for the line  Simple auth manager | Password for user 'admin': ****************) 
+### Finding Airflow Credentials
 
-manually trigger dags :
- 1. airflow/dags/load_and_verify_csv_data_to_company_db_dag.py  to  upload data to simulated company db 
- 2. airflow/dags/batch_processing_dag.py to run daily batch predicxtions 
+Locate the Airflow credentials in the Docker logs:
 
+```bash
+docker-compose logs airflow | grep "Password for user 'admin'"
+```
 
-Online predictions (Flask)
+### Manual Trigger of DAGs
 
-health test 
+Trigger the following DAGs manually via the Airflow web interface:
+
+1. **Load Data:** `airflow/dags/load_and_verify_csv_data_to_company_db_dag.py`
+2. **Daily Predictions:** `airflow/dags/batch_processing_dag.py`
+
+## Real-time Predictions with Flask API
+
+### Health Check
+
+```bash
 curl http://localhost:5000/health
+```
 
-prediction: curl -X POST http://localhost:5000/predict \
+### Prediction Request
+
+```bash
+curl -X POST http://localhost:5000/predict \
 -H "Content-Type: application/json" \
 -d '{"TotalCharges": 500.0, "Contract": "Month-to-month", "PhoneService": "Yes", "tenure": 10}'
+```
 
-
-
-
+---

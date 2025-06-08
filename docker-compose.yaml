@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   airflow:
     build: ./airflow
@@ -9,7 +7,7 @@ services:
       - ./company_db_setup:/opt/airflow/company_db_setup
       - ./config.yaml:/opt/airflow/config.yaml
       - ./airflow/scripts:/opt/airflow/scripts
-      - ./config.yaml:/opt/airflow/config.yaml
+      - ./monitoring:/opt/airflow/monitoring
     ports:
       - "8080:8080"
     environment:
@@ -46,7 +44,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./shared_modules:/app/shared_modules  # explicitly mount into /app
+      - ./shared_modules:/app/shared_modules  #  mount into /app
       - ./config.yaml:/app/config.yaml
       - ./company_db_setup:/app/company_db_setup
     environment:

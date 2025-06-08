@@ -22,11 +22,9 @@ with DAG(
         bash_command='PYTHONPATH=/opt/airflow python /opt/airflow/scripts/batch_processing/batch_predict.py',
     )
 
-    batch_predict_task.doc_md = """
-    ### 📌 **Batch Prediction Task**
-    - **Purpose:** Explicitly retrieve data from PostgreSQL, transform it, apply churn prediction model, and persist predictions back.
-    - **Tables processed explicitly:** `table1`, `table1_1`, `table1_2`.
-    - **Logs:** Detailed info, data shape, previews, and prediction summaries.
-    """
+    evidently_monitor_task = BashOperator(
+        task_id='run_evidently_monitoring',
+        bash_command='PYTHONPATH=/opt/airflow python /opt/airflow/monitoring/evidently_ai/scripts/run_evidently.py',
+    )
 
-    batch_predict_task
+    batch_predict_task >> evidently_monitor_task
