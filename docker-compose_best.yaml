@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   airflow:
-    build: ./airflow
+    image: apache/airflow:latest
     volumes:
       - ./shared_modules:/opt/airflow/shared_modules
       - ./airflow/dags:/opt/airflow/dags
@@ -15,15 +15,9 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
       AIRFLOW__WEBSERVER__SECRET_KEY: 'thisisasecretkey'
-      AIRFLOW__WEBSERVER__DEFAULT_USER_USERNAME: 'admin'
-      AIRFLOW__WEBSERVER__DEFAULT_USER_PASSWORD: 'admin'
-      AIRFLOW__WEBSERVER__DEFAULT_USER_EMAIL: 'admin@example.com'
-      AIRFLOW__WEBSERVER__DEFAULT_USER_FIRST_NAME: 'Air'
-      AIRFLOW__WEBSERVER__DEFAULT_USER_LAST_NAME: 'Flow'
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_HOST: ${POSTGRES_HOST}
     command: standalone
 
   db:

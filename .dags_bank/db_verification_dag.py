@@ -6,7 +6,7 @@ from datetime import datetime
 with DAG(
     'db_verification_dag',
     description='Explicitly verifies database contents after initialization',
-    schedule_interval='@once',
+    schedule='@once',
     start_date=datetime(2025, 1, 1),
     catchup=False,
 ) as dag:

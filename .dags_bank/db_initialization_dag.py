@@ -5,7 +5,7 @@ from datetime import datetime
 with DAG(
     'db_initialization_dag',
     description='Explicitly loads CSV into PostgreSQL',
-    schedule_interval='@once',
+    schedule='@once',
     start_date=datetime(2025, 1, 1),
     catchup=False,
 ) as dag:

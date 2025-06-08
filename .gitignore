@@ -10,3 +10,4 @@ logs
 # Personal utility files
 .utils/
 db_data
+.dags_bank

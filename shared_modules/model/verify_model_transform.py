@@ -1,43 +1,41 @@
-import pandas as pd
 import os
 import pickle
-import yaml
+import pandas as pd
+from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from shared_modules.transform import ChurnDataTransformer
 
-
-
-# Explicitly load environment variables
+# Explicitly load environment variables from .env
 load_dotenv()
 
-# Explicitly define PROJECT_ROOT as two directories up (shared_modules/model → Solution)
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+# Explicitly load DB credentials
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'db')  # Docker default
 
-# Load paths explicitly from config.yaml at project root
-with open(os.path.join(PROJECT_ROOT, 'config.yaml'), 'r') as file:
-    config = yaml.safe_load(file)
+# Create database connection explicitly
+engine = create_engine(
+    f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:5432/{POSTGRES_DB}'
+)
 
-# Explicitly define paths
-RAW_INPUT_CSV = os.path.join(PROJECT_ROOT, config['data_paths']['input_csv'])
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'churn_model.pickle')
+# Explicitly load data directly from PostgreSQL
+query = "SELECT * FROM table1 LIMIT 10;"
+raw_df = pd.read_sql(query, engine)
 
-
-
-# Explicitly load one row from raw CSV
-raw_df = pd.read_csv(RAW_INPUT_CSV).iloc[[0]]  # explicitly first row
-
-# Transform explicitly
+# Explicitly transform data
 transformer = ChurnDataTransformer()
 transformed_df = transformer.transform(raw_df)
 
 # Explicitly load trained model
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'churn_model.pickle')
 with open(MODEL_PATH, 'rb') as model_file:
     model = pickle.load(model_file)
 
-# Explicitly perform prediction
+# Explicitly predict using transformed data
 prediction = model.predict(transformed_df)
 
-# Explicitly output results
+# Explicitly output the transformed data and predictions
 print("✅ Explicitly transformed data:")
 print(transformed_df)
-print("\n✅ Explicit model prediction:", prediction)
+print("\n✅ Explicit model predictions:", prediction)
