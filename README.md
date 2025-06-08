@@ -100,9 +100,9 @@ Drift Monitoring Setup:
 
 * Generates drift reports comparing historical predictions and current prediction data.
 
-* Historical predictions stored explicitly in PostgreSQL (table1_historical_predictions).
+* Historical predictions stored in PostgreSQL (table1_historical_predictions).
 
-* Reports include both data drift and model prediction drift for comprehensive monitoring.
+* Reports include data drift for comprehensive monitoring.
 
 Report output location:
 ```bash
