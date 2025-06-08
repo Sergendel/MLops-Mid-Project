@@ -1,3 +1,6 @@
 data_paths:
   input_csv: "./company_db_setup/data_files/database_input.csv"
   output_csv: "./company_db_setup/data_files/transformed_output.csv"
+
+execution:
+  running_locally: false # explicitly set true or false

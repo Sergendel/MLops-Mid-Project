@@ -18,19 +18,27 @@ class ChurnDataTransformer(BaseTransformer):
     """
 
     def transform(self, dataset: pd.DataFrame) -> pd.DataFrame:
-        mean_total_charges = 2279  # Explicit mean value provided by client
-        dataset['TotalCharges'] = dataset['TotalCharges'].fillna(mean_total_charges)
-        dataset['TotalCharges'] = dataset['TotalCharges'].replace(' ', mean_total_charges).astype(float)
+        mean_total_charges = 2279
 
-        dataset = dataset.dropna(subset=['Contract'])
-        dataset['PhoneService'] = dataset['PhoneService'].fillna('No')
-        dataset['tenure'] = dataset['tenure'].fillna(dataset['tenure'].mean())
+        # Explicitly fillna and replace using .loc
+        dataset.loc[:, 'TotalCharges'] = dataset['TotalCharges'].fillna(mean_total_charges)
+        dataset.loc[:, 'TotalCharges'] = dataset['TotalCharges'].replace(' ', mean_total_charges).astype(float)
 
-        dataset['PhoneService'] = dataset['PhoneService'].map({'Yes': 1, 'No': 0})
+        # Explicitly drop NaNs safely
+        dataset = dataset.dropna(subset=['Contract']).copy()
 
+        # Explicitly fillna using .loc
+        dataset.loc[:, 'PhoneService'] = dataset['PhoneService'].fillna('No')
+        dataset.loc[:, 'tenure'] = dataset['tenure'].fillna(dataset['tenure'].mean())
+
+        # Explicit mapping explicitly using .loc
+        dataset.loc[:, 'PhoneService'] = dataset['PhoneService'].map({'Yes': 1, 'No': 0})
+
+        # Explicitly create contract dummies safely
         contract_dummies = pd.get_dummies(dataset['Contract'], dtype=int)
         dataset = pd.concat([dataset, contract_dummies], axis=1)
 
+        # Explicitly ensure required columns
         result_columns = ['TotalCharges', 'Month-to-month', 'One year', 'Two year', 'PhoneService', 'tenure']
 
         for col in ['Month-to-month', 'One year', 'Two year']:

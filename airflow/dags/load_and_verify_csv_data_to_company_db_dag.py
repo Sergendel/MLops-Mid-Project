@@ -5,8 +5,8 @@ from datetime import datetime
 with DAG(
     'load_and_verify_csv_data_to_company_db',
     description='Loads CSV, verifies DB data, and tests model compatibility',
-    schedule='@once',
-    start_date=datetime(2025, 1, 1),
+        schedule='0 12 * * *',  # explicitly daily at 12:00 PM
+        start_date=datetime(2025, 1, 1),
     catchup=False,
 ) as dag:
 
