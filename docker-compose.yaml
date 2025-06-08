@@ -8,6 +8,7 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./company_db_setup:/opt/airflow/company_db_setup
       - ./config.yaml:/opt/airflow/config.yaml
+      - ./airflow/scripts:/opt/airflow/scripts
     ports:
       - "8080:8080"
     environment:

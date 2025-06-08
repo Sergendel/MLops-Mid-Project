@@ -3,7 +3,7 @@ from airflow.operators.bash import BashOperator
 from datetime import datetime
 
 with DAG(
-    'db_load_db_verify_model_verify_dag',
+    'load_and_verify_csv_data_to_company_db',
     description='Loads CSV, verifies DB data, and tests model compatibility',
     schedule='@once',
     start_date=datetime(2025, 1, 1),
