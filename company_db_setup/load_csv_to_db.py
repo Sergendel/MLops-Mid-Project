@@ -17,6 +17,7 @@ engine = create_engine(
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
+# config
 with open(os.path.join(PROJECT_ROOT, 'config.yaml'), 'r') as file:
     config = yaml.safe_load(file)
 
@@ -27,7 +28,8 @@ csv_tables = {
 }
 
 for csv_file, table_name in csv_tables.items():
-    csv_path = os.path.join(PROJECT_ROOT, 'company_db_setup', 'data_files', csv_file)
+    # csv_path = os.path.join(PROJECT_ROOT, 'company_db_setup', 'data_files', 'raw_data', csv_file)
+    csv_path = os.path.join(PROJECT_ROOT, config['paths']['raw_data_dir'], csv_file)
     df = pd.read_csv(csv_path)
     df.to_sql(table_name, engine, if_exists='replace', index=False)
     print(f"✅ Loaded '{csv_file}' into '{table_name}'")

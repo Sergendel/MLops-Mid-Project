@@ -1,6 +1,8 @@
-data_paths:
-  input_csv: "./company_db_setup/data_files/database_input.csv"
-  output_csv: "./company_db_setup/data_files/transformed_output.csv"
+paths:
+  raw_data_dir: 'company_db_setup/data_files/raw_data'
+  predictions_csv_dir: 'company_db_setup/predictions'
+  churn_model: 'shared_modules/model/churn_model.pickle'
+  evidently_report_path: 'monitoring/evidently_reports/evidently_report.html'
 
 execution:
   running_locally: false # explicitly set true or false

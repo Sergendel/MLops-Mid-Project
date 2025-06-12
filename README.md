@@ -108,12 +108,12 @@ Immediate predictions using a trained churn model.
 
 Tracks data drift and model performance.
 
-* **Report Output:** `company_db_setup/data_files/evidently_report.html`
+* **Report Output:** `company_db_setup/evidently_reports/evidently_report.html`
 
 * **View Report:**
 
   ```bash
-  cd company_db_setup/data_files
+  cd cmonitoring/evidently_reports
   python -m http.server 8000
   ```
 

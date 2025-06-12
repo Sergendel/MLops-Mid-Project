@@ -57,8 +57,9 @@ if __name__ == "__main__":
     with open(os.path.join(PROJECT_ROOT, 'config.yaml'), 'r') as file:
         config = yaml.safe_load(file)
 
-    INPUT_CSV_PATH = os.path.join(PROJECT_ROOT, config['data_paths']['input_csv'])
-    OUTPUT_CSV_PATH = os.path.join(PROJECT_ROOT, config['data_paths']['output_csv'])
+    INPUT_CSV_PATH = os.path.join(PROJECT_ROOT, "./company_db_setup/data_files/raw_data/database_input.csv")
+    OUTPUT_CSV_PATH = os.path.join(PROJECT_ROOT, "./company_db_setup/data_files/transformed_output.csv")
+
 
     df = pd.read_csv(INPUT_CSV_PATH)
 

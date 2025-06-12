@@ -18,7 +18,7 @@ engine = create_engine(
 )
 
 
-# Explicitly verify tables
+#  Verify tables
 explicit_tables = ['table1', 'table2', 'table3']
 
 for table in explicit_tables:
