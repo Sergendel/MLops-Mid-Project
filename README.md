@@ -113,7 +113,7 @@ Tracks data drift and model performance.
 * **View Report:**
 
   ```bash
-  cd cmonitoring/evidently_reports
+  cd monitoring/evidently_reports
   python -m http.server 8000
   ```
 
